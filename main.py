@@ -1,4 +1,5 @@
 from colorama import init, Fore, Back, Style
+import pyfiglet
 
 # Initialize colorama
 init(autoreset=True)
@@ -15,3 +16,15 @@ def main():
 
 if __name__ == '__main__':
   main()
+
+# Create a Figlet font object
+font = pyfiglet.Figlet()
+
+# Text to convert to ASCII art
+text = "Hello, ASCII Art!"
+
+# Generate the ASCII art
+ascii_art = font.renderText(text)
+
+# Print the result
+print(ascii_art)
