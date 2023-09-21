@@ -35,44 +35,94 @@ print(ascii_art)
 
 
 # Initialize pygame
+# Initialize pygame
 pygame.init()
 
-# Set up display
-WIDTH, HEIGHT = 300, 200
-win = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Slot Machine")
-
-# Define colors
+# Colors
 WHITE = (255, 255, 255)
+GREEN = (0, 128, 0)
 RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-YELLOW = (255, 255, 0)
 
-# Symbols represented as colors
-symbols = [RED, GREEN, BLUE, YELLOW]
+# Screen dimensions
+WIDTH, HEIGHT = 320, 240
+CELL_SIZE = 10
 
-def spin_slot_machine():
-    return [random.choice(symbols) for _ in range(3)]
+# Directions
+LEFT = (-1, 0)
+RIGHT = (1, 0)
+UP = (0, -1)
+DOWN = (0, 1)
 
-def game():
-    run = True
-    spin_result = [WHITE, WHITE, WHITE]
-    
-    while run:
-        win.fill(WHITE)
-        
+win = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Snake Game")
+
+class Snake:
+    def __init__(self):
+        self.body = [(5, 5), (4, 5), (3, 5)]
+        self.direction = RIGHT
+
+    def move(self):
+        head = self.body[0]
+        new_head = ((head[0] + self.direction[0]) % (WIDTH // CELL_SIZE), 
+                    (head[1] + self.direction[1]) % (HEIGHT // CELL_SIZE))
+        self.body = [new_head] + self.body[:-1]
+
+    def grow(self):
+        head = self.body[0]
+        new_head = ((head[0] + self.direction[0]) % (WIDTH // CELL_SIZE), 
+                    (head[1] + self.direction[1]) % (HEIGHT // CELL_SIZE))
+        self.body = [new_head] + self.body
+
+    def collides_with_self(self):
+        return self.body[0] in self.body[1:]
+
+    def change_direction(self, new_direction):
+        if (new_direction[0], new_direction[1]) != (-self.direction[0], -self.direction[1]):
+            self.direction = new_direction
+
+def snakeGame():
+    snake = Snake()
+    food = (random.randint(0, (WIDTH // CELL_SIZE) - 1), random.randint(0, (HEIGHT // CELL_SIZE) - 1))
+    clock = pygame.time.Clock()
+
+    running = True
+    while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                spin_result = spin_slot_machine()
+                running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    snake.change_direction(LEFT)
+                elif event.key == pygame.K_RIGHT:
+                    snake.change_direction(RIGHT)
+                elif event.key == pygame.K_UP:
+                    snake.change_direction(UP)
+                elif event.key == pygame.K_DOWN:
+                    snake.change_direction(DOWN)
 
-        for i, color in enumerate(spin_result):
-            pygame.draw.circle(win, color, (i * 100 + 50, HEIGHT // 2), 40)
+        snake.move()
 
+        # Check collision with food
+        if snake.body[0] == food:
+            snake.grow()
+            food = (random.randint(0, (WIDTH // CELL_SIZE) - 1), random.randint(0, (HEIGHT // CELL_SIZE) - 1))
+
+        # Check collision with self
+        if snake.collides_with_self():
+            snake = Snake()  # Reset game
+
+        # Drawing
+        win.fill(WHITE)
+        
+        for segment in snake.body:
+            pygame.draw.rect(win, GREEN, (segment[0]*CELL_SIZE, segment[1]*CELL_SIZE, CELL_SIZE, CELL_SIZE))
+        
+        pygame.draw.rect(win, RED, (food[0]*CELL_SIZE, food[1]*CELL_SIZE, CELL_SIZE, CELL_SIZE))
+        
         pygame.display.flip()
+        clock.tick(10)
 
     pygame.quit()
 
-game()
+
+snakeGame()
